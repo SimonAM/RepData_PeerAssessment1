@@ -7,11 +7,37 @@ output:
 
 
 ## Loading and preprocessing the data
-
+Dplyr is used.
+```{r, echo=FALSE}
+setwd("C:/Users/Simon/Google Drive/R/coursera/reproducible research/RepData_PeerAssessment1")
+unzip("activity.zip")
+activity <- read.csv("activity.csv")
+library(dplyr)
+```
 
 
 ## What is mean total number of steps taken per day?
 
+total steps per day
+```{r, echo=FALSE}
+activity %>% 
+        group_by(date) %>% 
+        summarize(total=sum(steps)) %>% 
+        print
+```
+Make histogram of total steps per day
+# Have not finished!
+```{r, echo=FALSE}
+
+```
+
+Mean and median per day
+```{r, echo=FALSE}
+activity %>% 
+        group_by(date) %>% 
+        summarize(mean=mean(steps, na.rm=TRUE), median=median(steps, na.rm=TRUE)) %>% 
+        print
+```
 
 
 ## What is the average daily activity pattern?
