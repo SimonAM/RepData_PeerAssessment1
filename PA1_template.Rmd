@@ -6,32 +6,34 @@ output:
 ---
 
 
-## Loading and preprocessing the data
-Dplyr is used.
+Dplyr is used during the loading and preprocessing the data
+
+
 ```{r, echo=FALSE}
 setwd("C:/Users/Simon/Google Drive/R/coursera/reproducible research/RepData_PeerAssessment1")
 unzip("activity.zip")
 activity <- read.csv("activity.csv")
-library(dplyr)
+suppressPackageStartupMessages(library(dplyr))
+
 ```
 
 
 ## What is mean total number of steps taken per day?
 
-total steps per day
+Total steps per day
 ```{r, echo=FALSE}
 activity %>% 
         group_by(date) %>% 
         summarize(total=sum(steps)) %>% 
         print
 ```
-Make histogram of total steps per day
-# Have not finished!
-```{r, echo=FALSE}
 
+
+```{r, echo=FALSE}
+hist(activity$steps, xlab="Steps", main="Histogram of overall steps")
 ```
 
-Mean and median per day
+Mean and median number of steps per day
 ```{r, echo=FALSE}
 activity %>% 
         group_by(date) %>% 
@@ -41,11 +43,80 @@ activity %>%
 
 
 ## What is the average daily activity pattern?
+```{R echo=FALSE}
+interval_orig <-activity %>%
+        group_by(interval) %>%
+        summarize(meanint=mean(steps, na.rm=T))
+order_int <- interval_orig %>%
+        arrange(desc(meanint))
+        
+max_steps <- order_int[[1]][[1]]
+        
+````
+The 5 minute interval with max nr of steps is `r max_steps`  as seen in the time series plot below.
+```{R echo=FALSE}
+
+
+plot(interval_orig$interval,interval_orig$meanint, type="l", xlab="interval", ylab="Mean steps")
+```
+
 
 
 
 ## Imputing missing values
+```{R, echo=FALSE}
+missnum <- activity %>%
+        is.na %>%
+        sum
+````
+Nr of missing values are `r missnum`
 
 
+```{R, echo=FALSE}
+missingsteps <- is.na(activity$steps)
+activity$steps[missingsteps] <- mean(activity$steps,na.rm=T)
+
+impute_activity <- data.frame(activity)
+activity <- read.csv("activity.csv")
+````
+
+```{R, echo=FALSE}
+total_impute <- impute_activity %>% 
+        group_by(date) %>% 
+        summarize(total=sum(steps))
+hist(total_impute$total,xlab="Total steps", main="Histogram of total steps")
+````
+
+Mean & median steps per day
+```{R, echo=FALSE}
+impute_activity %>% 
+        group_by(date) %>% 
+        summarize(mean=mean(steps, na.rm=TRUE), median=median(steps, na.rm=TRUE)) %>% 
+        print
+````
+
+Does these numbers differ from the first part of the assignment? Yes.The imputation increased the proportion of low activity compared to the non-imputed values seen below.
+```{R, echo=FALSE}
+activity %>% 
+        group_by(date) %>% 
+        summarize(mean=mean(steps, na.rm=TRUE), median=median(steps, na.rm=TRUE)) %>% 
+        print
+````
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{R, echo=FALSE}
+stripped_date <- strptime(impute_activity$date,format="%Y-%m-%d")
+daysofweek <- weekdays(stripped_date)
+weekends <- daysofweek=="Saturday"|daysofweek=="Sunday"
+workdays <- daysofweek=="Monday"|daysofweek=="Tuesday"|daysofweek=="Wednesday"|daysofweek=="Thursday"|daysofweek=="Friday"
+weekly_activity <- data.frame(impute_activity, workdays, weekends)
+````
+
+```{R, echo=FALSE}
+weekend_steps <- weekly_activity[weekends==TRUE,] %>% group_by(interval) %>% summarize(mean=mean(steps,na.rm=T))
+workday_steps <- weekly_activity[weekends==FALSE,] %>% group_by(interval) %>% summarize(mean=mean(steps,na.rm=T))
+par(mfcol=c(2,1))
+plot(workday_steps$interval,workday_steps$mean, type="l", main="Workdays", xlab="Interval", ylab="Number of steps")
+plot(weekend_steps$interval,weekend_steps$mean, type="l", main="Weekends", xlab="Interval", ylab="Number of steps")
+````
