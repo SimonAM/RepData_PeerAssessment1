@@ -87,7 +87,7 @@ order_int <- interval_orig %>%
         
 max_steps <- order_int[[1]][[1]]
 ```
-The 5 minute interval with max nr of steps is 835  as seen in the time series plot below.
+The 5 minute interval with the highest number of steps is 835  as seen in the time series plot below.
 
 ```r
 plot(interval_orig$interval,interval_orig$meanint, type="l", xlab="interval", ylab="Mean steps")
